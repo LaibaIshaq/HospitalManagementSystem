@@ -102,19 +102,27 @@ app.post('/login', async (req, res) => {
     }
 
     // Check doctor
-    const [doctors] = await db.promise().query('SELECT * FROM doctors WHERE email = ? AND password = ?', [email, password]);
+    const [doctors] = await db.promise().query('SELECT * FROM doctors WHERE email = ?', [email]);
     if (doctors.length > 0) {
-      req.session.doctorId = doctors[0].id;
-      res.json({ redirect: '/doctor-dashboard.html' });
-      return;
+      const doctor = doctors[0];
+      const match = await bcrypt.compare(password, doctor.password);
+      if (match) {
+        req.session.doctorId = doctor.id;
+        res.json({ redirect: '/doctor-dashboard.html' });
+        return;
+      }
     }
 
     // Check patient
-    const [patients] = await db.promise().query('SELECT * FROM patients WHERE email = ? AND password = ?', [email, password]);
+    const [patients] = await db.promise().query('SELECT * FROM patients WHERE email = ?', [email]);
     if (patients.length > 0) {
-      req.session.patientId = patients[0].id;
-      res.json({ redirect: '/patient-dashboard.html' });
-      return;
+      const patient = patients[0];
+      const match = await bcrypt.compare(password, patient.password);
+      if (match) {
+        req.session.patientId = patient.id;
+        res.json({ redirect: '/patient-dashboard.html' });
+        return;
+      }
     }
 
     res.status(401).json({ error: 'Invalid credentials' });
@@ -191,13 +199,17 @@ app.get('/patient-data', async (req, res) => {
 // Doctor data route
 app.get('/doctor-data', async (req, res) => {
   try {
-    const [doctor] = await db.promise().query('SELECT * FROM doctors WHERE id = ?', [1]); // Replace with actual doctor ID
+    const doctorId = req.session.doctorId;
+    if (!doctorId) {
+      return res.status(401).json({ error: 'Not logged in as doctor' });
+    }
+    const [doctor] = await db.promise().query('SELECT * FROM doctors WHERE id = ?', [doctorId]);
     const [patients] = await db.promise().query(`
       SELECT p.*, a.disease 
       FROM patients p 
       JOIN assignments a ON p.id = a.patient_id 
       WHERE a.doctor_id = ?
-    `, [1]); // Replace with actual doctor ID
+    `, [doctorId]);
     const d = doctor[0] || {};
     res.json({
       fname: d.fname || '',
