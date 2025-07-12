@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - Hospital Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+        }
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+        }
+        .sidebar button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #555;
+        }
+        .sidebar button:hover {
+            background: #f5f5f5;
+        }
+        .sidebar button.active {
+            background: #4CAF50;
+            color: #fff;
+        }
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .section {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .section h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .profile-card {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+        }
+        .profile-details {
+            flex: 1;
+        }
+        .profile-pic-box {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .profile-pic-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-row {
+            margin-bottom: 12px;
+        }
+        .profile-label {
+            font-weight: bold;
+            color: #555;
+            display: inline-block;
+            width: 120px;
+        }
+        .profile-actions {
+            margin-top: 20px;
+        }
+        .profile-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+        .profile-actions button.edit {
+            background: #4CAF50;
+            color: #fff;
+        }
+        .profile-actions button.save {
+            background: #2196F3;
+            color: #fff;
+        }
+        .profile-actions button.cancel {
+            background: #f44336;
+            color: #fff;
+        }
+        .doctor-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 18px 16px;
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow 0.2s;
+        }
+        .doctor-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        .doctor-card img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 2px solid #eee;
+        }
+        .doctor-card .doctor-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        .doctor-card .doctor-disease {
+            color: #555;
+            margin-bottom: 4px;
+        }
+        .doctor-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .appointments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .appointments-table th,
+        .appointments-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .appointments-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+            color: #333;
+        }
+        .status-completed { color: #388e3c; font-weight: bold; }
+        .status-pending { color: #fbc02d; font-weight: bold; }
+        .status-cancelled { color: #d32f2f; font-weight: bold; }
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                padding: 10px;
+            }
+            .main-content {
+                padding: 15px;
+            }
+            .profile-card {
+                flex-direction: column;
+            }
+            .profile-pic-box {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <button id="btnPersonal" class="active">Personal Info</button>
+            <button id="btnDoctors">My Doctors</button>
+            <button id="btnAppointments">Appointments</button>
+            <button onclick="window.location.href='login.html'" style="margin-top: auto;">Logout</button>
+        </div>
+        <div class="main-content">
+            <div id="personalSection"></div>
+            <div id="doctorsSection" style="display:none;"></div>
+            <div id="appointmentsSection" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar switching
+        const btnPersonal = document.getElementById('btnPersonal');
+        const btnDoctors = document.getElementById('btnDoctors');
+        const btnAppointments = document.getElementById('btnAppointments');
+        const personalSection = document.getElementById('personalSection');
+        const doctorsSection = document.getElementById('doctorsSection');
+        const appointmentsSection = document.getElementById('appointmentsSection');
+
+        btnPersonal.onclick = () => showSection('personal');
+        btnDoctors.onclick = () => showSection('doctors');
+        btnAppointments.onclick = () => showSection('appointments');
+
+        function showSection(section) {
+            [btnPersonal, btnDoctors, btnAppointments].forEach(btn => btn.classList.remove('active'));
+            [personalSection, doctorsSection, appointmentsSection].forEach(s => s.style.display = 'none');
+            
+            if (section === 'personal') {
+                btnPersonal.classList.add('active');
+                personalSection.style.display = '';
+            } else if (section === 'doctors') {
+                btnDoctors.classList.add('active');
+                doctorsSection.style.display = '';
+            } else if (section === 'appointments') {
+                btnAppointments.classList.add('active');
+                appointmentsSection.style.display = '';
+            }
+        }
+
+        // Fetch and render patient data
+        let patientData = {};
+        let editMode = false;
+
+        async function fetchPatientData() {
+            try {
+                const response = await fetch('/patient-data', {
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    throw new Error('Failed to fetch patient data');
+                }
+                patientData = await response.json();
+                renderPersonalSection();
+                renderDoctorsSection();
+                renderAppointmentsSection();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Failed to load patient data', 'error');
+            }
+        }
+
+        function renderPersonalSection() {
+            let html = `
+                <div class="section">
+                    <h3>Personal Information</h3>
+                    <div class="profile-card">
+                        <div class="profile-details">
+                            <div class="profile-row">
+                                <span class="profile-label">First Name:</span>
+                                ${editMode ? `<input type="text" id="edit_fname" value="${patientData.fname || ''}">` : patientData.fname || ''}
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Last Name:</span>
+                                ${editMode ? `<input type="text" id="edit_lname" value="${patientData.lname || ''}">` : patientData.lname || ''}
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Email:</span>
+                                <span>${patientData.email || ''}</span>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Address:</span>
+                                ${editMode ? `<input type="text" id="edit_address" value="${patientData.address || ''}">` : patientData.address || ''}
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Age:</span>
+                                ${editMode ? `<input type="number" id="edit_age" value="${patientData.age || ''}">` : patientData.age || ''}
+                            </div>
+                            ${editMode ? `<div class="profile-row"><span class="profile-label">Profile Picture:</span><input type="file" id="edit_profile_pic" accept="image/*"></div>` : ''}
+                            <div class="profile-row">
+                                <span class="profile-label">Blood Group:</span>
+                                ${patientData.blood_group || 'Not assigned'}
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Disease:</span>
+                                ${patientData.disease || 'Not assigned'}
+                            </div>
+                            <div class="profile-actions">
+                                ${editMode ? `
+                                    <button class="save" onclick="saveProfile()">Save</button>
+                                    <button class="cancel" onclick="cancelEdit()">Cancel</button>
+                                ` : `
+                                    <button class="edit" onclick="editProfile()">Edit Profile</button>
+                                `}
+                            </div>
+                        </div>
+                        <div class="profile-pic-box">
+                            ${patientData.profile_pic ? 
+                                `<img src="/uploads/${patientData.profile_pic}" alt="Profile Picture">` : 
+                                'No Image'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            personalSection.innerHTML = html;
+        }
+
+        function renderDoctorsSection() {
+            let html = `
+                <div class="section">
+                    <h3>My Doctors</h3>
+                    <div class="doctor-cards">
+                        ${patientData.doctors && patientData.doctors.length > 0 ? 
+                            patientData.doctors.map(doctor => `
+                                <div class="doctor-card">
+                                    <img src="/uploads/${doctor.profile_pic || ''}" 
+                                         onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.fname + ' ' + doctor.lname)}'"
+                                         alt="Doctor Profile">
+                                    <div class="doctor-name">Dr. ${doctor.fname} ${doctor.lname}</div>
+                                    <div class="doctor-disease">${doctor.disease || 'N/A'}</div>
+                                </div>
+                            `).join('') : 
+                            '<p>No doctors assigned yet.</p>'
+                        }
+                    </div>
+                </div>
+            `;
+            doctorsSection.innerHTML = html;
+        }
+
+        async function renderAppointmentsSection() {
+            try {
+                const response = await fetch('/appointments/patient/' + patientData.id, {
+                    credentials: 'include'
+                });
+                const appointments = await response.json();
+                
+                let html = `
+                    <div class="section">
+                        <h3>My Appointments</h3>
+                        <table class="appointments-table">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Disease</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${appointments.map(apt => `
+                                    <tr>
+                                        <td>${apt.doctor_name || 'Deleted'}</td>
+                                        <td>${apt.disease || 'N/A'}</td>
+                                        <td>${apt.appointment_time || 'Not scheduled'}</td>
+                                        <td class="status-${apt.status}">${apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                appointmentsSection.innerHTML = html;
+            } catch (error) {
+                console.error('Error:', error);
+                appointmentsSection.innerHTML = '<div class="section"><p>Failed to load appointments.</p></div>';
+            }
+        }
+
+        function editProfile() {
+            editMode = true;
+            renderPersonalSection();
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent.firstChild) {
+                mainContent.insertBefore(messageDiv, mainContent.firstChild);
+            } else {
+                mainContent.appendChild(messageDiv);
+            }
+            setTimeout(() => messageDiv.remove(), 3000);
+        }
+
+        async function saveProfile() {
+            const fname = document.getElementById('edit_fname').value.trim();
+            const lname = document.getElementById('edit_lname').value.trim();
+            const address = document.getElementById('edit_address').value.trim();
+            const age = document.getElementById('edit_age').value.trim();
+
+            // Frontend validation
+            if (!fname || !lname || !address || !age) {
+                showMessage('All fields are required.', 'error');
+                return;
+            }
+
+            // Optional: Age validation
+            const ageNum = parseInt(age);
+            if (isNaN(ageNum) || ageNum < 0 || ageNum > 150) {
+                showMessage('Please enter a valid age.', 'error');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('fname', fname);
+                formData.append('lname', lname);
+                formData.append('address', address);
+                formData.append('age', age);
+                const fileInput = document.getElementById('edit_profile_pic');
+                if (fileInput && fileInput.files.length > 0) {
+                    formData.append('profilePic', fileInput.files[0]);
+                }
+                console.log('Sending update with data:', { fname, lname, address, age });
+                const response = await fetch('/update-patient', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    editMode = false;
+                    await fetchPatientData();
+                    showMessage('Profile updated successfully', 'success');
+                } else {
+                    showMessage(data.error || 'Failed to update profile', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Failed to update profile. Please try again.', 'error');
+            }
+        }
+
+        function cancelEdit() {
+            editMode = false;
+            renderPersonalSection();
+        }
+
+        // Initial load
+        fetchPatientData();
+    </script>
+</body>
+</html>
