@@ -32,3 +32,9 @@ The **Hospital Management System (HMS)** is a web-based platform designed to str
 - Admins approve doctor registrations and manage assignments.
 - Doctors and patients can update their profiles and view appointments.
 - All data is securely managed and validated in the backend.
+
+## ERD Diagram
+
+<img width="374" height="343" alt="image" src="https://github.com/user-attachments/assets/36808a68-2266-4dd9-befb-635db16a1f71" />
+
+
